@@ -1,0 +1,1 @@
+ALTER TABLE transactions ALTER COLUMN wallet_id DROP NOT NULL;
