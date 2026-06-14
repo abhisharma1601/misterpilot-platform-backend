@@ -100,8 +100,8 @@ public class CostCalculatorService {
             TransactionRequest txnRequest = new TransactionRequest();
             txnRequest.setAmount(costInr);
             txnRequest.setType(TransactionType.USAGE_CHARGE);
-            txnRequest.setPaymentId("deduction_payment_id");
-            txnRequest.setOrderId("deduction_order_id");
+        //     txnRequest.setPaymentId("deduction_payment_id");
+        //     txnRequest.setOrderId("deduction_order_id");
 
             TransactionResponse txnResponse = walletService.processTransaction(txnRequest, user);
             walletDebited = true;
