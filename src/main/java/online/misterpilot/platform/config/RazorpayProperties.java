@@ -17,6 +17,7 @@ public class RazorpayProperties {
 
     private String keyId;
     private String keySecret;
+    private String webhookSecret;
 
     @Bean
     public RazorpayClient razorpayClient() throws RazorpayException {

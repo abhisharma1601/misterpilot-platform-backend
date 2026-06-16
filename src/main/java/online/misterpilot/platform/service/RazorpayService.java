@@ -39,6 +39,18 @@ public class RazorpayService {
     }
 
     /**
+     * Verifies the Razorpay webhook signature (HMAC-SHA256 of raw body).
+     * Throws RuntimeException if signature is invalid.
+     */
+    public void verifyWebhookSignature(String payload, String signature) {
+        try {
+            Utils.verifyWebhookSignature(payload, signature, razorpayProperties.getWebhookSecret());
+        } catch (RazorpayException ex) {
+            throw new RuntimeException("Webhook signature verification failed", ex);
+        }
+    }
+
+    /**
      * Verifies the Razorpay payment signature.
      * Throws RuntimeException if signature is invalid.
      */

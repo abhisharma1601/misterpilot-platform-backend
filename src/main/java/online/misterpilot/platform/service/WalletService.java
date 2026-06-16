@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -98,6 +99,68 @@ public class WalletService {
             transactionRepository.save(transaction);
             log.info("Transaction marked FAILED: orderId={}, user={}", orderId, user.getId());
         }
+    }
+
+    /**
+     * Called by the Razorpay webhook on payment.captured.
+     * Finds the PENDING transaction by orderId, credits the wallet, and marks SUCCESS.
+     * Idempotent — no-ops if already SUCCESS.
+     */
+    @Transactional
+    public void webhookCreditWallet(String orderId, String paymentId, long amountPaise) {
+        Transaction transaction = transactionRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new IllegalStateException(
+                        "No transaction found for orderId=" + orderId));
+
+        if (transaction.getStatus() == TransactionStatus.SUCCESS) {
+            log.info("Webhook: already SUCCESS, skipping. orderId={}", orderId);
+            return;
+        }
+
+        // Guard against duplicate paymentId already credited
+        Optional<Transaction> duplicate = transactionRepository.findByPaymentId(paymentId);
+        if (duplicate.isPresent() && duplicate.get().getStatus() == TransactionStatus.SUCCESS) {
+            throw new IllegalStateException("Payment already processed: paymentId=" + paymentId);
+        }
+
+        BigDecimal amount = BigDecimal.valueOf(amountPaise)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+        Wallet wallet = transaction.getWallet();
+        wallet.setBalance(wallet.getBalance().add(amount));
+        walletRepository.save(wallet);
+
+        transaction.setStatus(TransactionStatus.SUCCESS);
+        transaction.setPaymentId(paymentId);
+        transaction.setAmount(amount);
+        transactionRepository.save(transaction);
+
+        log.info("Webhook: wallet credited. orderId={}, paymentId={}, amount={}, newBalance={}",
+                orderId, paymentId, amount, wallet.getBalance());
+    }
+
+    /**
+     * Called by the Razorpay webhook on payment.failed.
+     * Finds the PENDING transaction by orderId, sets the paymentId, and marks FAILED.
+     * Idempotent — no-ops if already SUCCESS or FAILED.
+     */
+    @Transactional
+    public void webhookFailPayment(String orderId, String paymentId) {
+        Transaction transaction = transactionRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new IllegalStateException(
+                        "No transaction found for orderId=" + orderId));
+
+        if (transaction.getStatus() != TransactionStatus.PENDING) {
+            log.info("Webhook: transaction already {} skipping fail. orderId={}",
+                    transaction.getStatus(), orderId);
+            return;
+        }
+
+        transaction.setStatus(TransactionStatus.FAILED);
+        transaction.setPaymentId(paymentId);
+        transactionRepository.save(transaction);
+
+        log.info("Webhook: transaction marked FAILED. orderId={}, paymentId={}", orderId, paymentId);
     }
 
     /**

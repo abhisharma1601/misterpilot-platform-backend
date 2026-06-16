@@ -40,6 +40,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/auth/google/**").permitAll()
                 .requestMatchers("/api/v1/keys/verify").permitAll()
                 .requestMatchers("/internal/**").permitAll()
+                .requestMatchers("/api/v1/webhook/**").permitAll()
+                .requestMatchers("/api/v1/wallet/credit").denyAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form.disable())
