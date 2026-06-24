@@ -78,17 +78,19 @@ class DtoTests {
         void shouldBuild() {
             UsageChargeRequest req = UsageChargeRequest.builder()
                     .apiKey("mp_sk_testtest1234")
+                    .costInr(new BigDecimal("1.25"))
+                    .model("deepseek-v4-pro")
                     .outputTokens(1000)
                     .cacheHitTokens(500)
                     .cacheMissTokens(200)
-                    .model("deepseek-v4-pro")
                     .build();
 
             assertThat(req.getApiKey()).isEqualTo("mp_sk_testtest1234");
+            assertThat(req.getCostInr()).isEqualByComparingTo(new BigDecimal("1.25"));
+            assertThat(req.getModel()).isEqualTo("deepseek-v4-pro");
             assertThat(req.getOutputTokens()).isEqualTo(1000);
             assertThat(req.getCacheHitTokens()).isEqualTo(500);
             assertThat(req.getCacheMissTokens()).isEqualTo(200);
-            assertThat(req.getModel()).isEqualTo("deepseek-v4-pro");
         }
     }
 

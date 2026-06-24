@@ -1,13 +1,9 @@
 package online.misterpilot.platform.controller;
 
 import online.misterpilot.platform.dto.request.CreateOrderRequest;
-import online.misterpilot.platform.dto.request.CreditWalletRequest;
 import online.misterpilot.platform.dto.request.FailPaymentRequest;
-import online.misterpilot.platform.dto.request.TransactionRequest;
 import online.misterpilot.platform.dto.response.CreateOrderResponse;
-import online.misterpilot.platform.dto.response.TransactionResponse;
 import online.misterpilot.platform.entity.User;
-import online.misterpilot.platform.enums.TransactionType;
 import online.misterpilot.platform.service.WalletService;
 import online.misterpilot.platform.util.AuthUtil;
 
@@ -41,21 +37,6 @@ public class WalletController {
 
         User user = authUtil.getCurrentUser();
         return ResponseEntity.ok(walletService.createOrder(request, user));
-    }
-
-    @PostMapping("/credit")
-    public ResponseEntity<TransactionResponse> creditWallet(
-            @RequestBody CreditWalletRequest request) {
-
-        User user = authUtil.getCurrentUser();
-
-        TransactionRequest txn = new TransactionRequest();
-        txn.setType(TransactionType.RECHARGE);
-        txn.setOrderId(request.getOrderId());
-        txn.setPaymentId(request.getPaymentId());
-        txn.setSignature(request.getSignature());
-
-        return ResponseEntity.ok(walletService.processTransaction(txn, user));
     }
 
     @PostMapping("/fail-payment")

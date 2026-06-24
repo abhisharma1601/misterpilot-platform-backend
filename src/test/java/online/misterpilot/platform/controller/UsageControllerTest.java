@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -45,22 +46,12 @@ class UsageControllerTest {
 
     private UsageChargeRequest validRequest;
 
-    private static CostCalculationResponse deepSeekResponse() {
+    private static CostCalculationResponse chargedResponse() {
         return CostCalculationResponse.builder()
-                .costUsd(new BigDecimal("0.00095881"))
-                .costInr(new BigDecimal("0.09"))
+                .costUsd(BigDecimal.ZERO)
+                .costInr(new BigDecimal("1.00"))
                 .model("deepseek-v4-pro")
-                .breakdown("model=deepseek-v4-pro | margin=0%")
-                .walletDebited(false)
-                .build();
-    }
-
-    private static CostCalculationResponse misterPilotResponse() {
-        return CostCalculationResponse.builder()
-                .costUsd(new BigDecimal("0.00113100"))
-                .costInr(new BigDecimal("0.11"))
-                .model("deepseek-v4-pro")
-                .breakdown("model=deepseek-v4-pro | margin=30%")
+                .breakdown("deducted=₹1.00")
                 .walletDebited(true)
                 .build();
     }
@@ -69,10 +60,11 @@ class UsageControllerTest {
     void setUp() {
         validRequest = UsageChargeRequest.builder()
                 .apiKey("mp_sk_test1234")
+                .costInr(new BigDecimal("1.00"))
+                .model("deepseek-v4-pro")
                 .outputTokens(1000L)
                 .cacheHitTokens(500L)
                 .cacheMissTokens(200L)
-                .model("deepseek-v4-pro")
                 .build();
     }
 
@@ -87,27 +79,25 @@ class UsageControllerTest {
         @Test
         @DisplayName("Should return 200 OK with CostCalculationResponse body")
         void shouldReturn200WithResponseBody() throws Exception {
-            CostCalculationResponse response = deepSeekResponse();
             when(keyUsageService.chargeUsage(
-                    anyString(), anyLong(), anyLong(), anyLong(), anyString()))
-                    .thenReturn(response);
+                    anyString(), any(BigDecimal.class), anyString(), anyLong(), anyLong(), anyLong()))
+                    .thenReturn(chargedResponse());
 
             mockMvc.perform(post("/internal/usage/charge")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(validRequest)))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.costUsd").value(0.00095881))
-                    .andExpect(jsonPath("$.costInr").value(0.09))
+                    .andExpect(jsonPath("$.costInr").value(1.00))
                     .andExpect(jsonPath("$.model").value("deepseek-v4-pro"))
-                    .andExpect(jsonPath("$.walletDebited").value(false));
+                    .andExpect(jsonPath("$.walletDebited").value(true));
         }
 
         @Test
-        @DisplayName("Should call KeyUsageService.chargeUsage with correct args")
+        @DisplayName("Should call KeyUsageService.chargeUsage with all correct args")
         void shouldCallServiceWithCorrectArgs() throws Exception {
             when(keyUsageService.chargeUsage(
-                    anyString(), anyLong(), anyLong(), anyLong(), anyString()))
-                    .thenReturn(deepSeekResponse());
+                    anyString(), any(BigDecimal.class), anyString(), anyLong(), anyLong(), anyLong()))
+                    .thenReturn(chargedResponse());
 
             mockMvc.perform(post("/internal/usage/charge")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -115,36 +105,37 @@ class UsageControllerTest {
 
             verify(keyUsageService).chargeUsage(
                     eq("mp_sk_test1234"),
-                    eq(1000L), eq(500L), eq(200L),
-                    eq("deepseek-v4-pro"));
+                    eq(new BigDecimal("1.00")),
+                    eq("deepseek-v4-pro"),
+                    eq(1000L), eq(500L), eq(200L));
         }
 
         @Test
-        @DisplayName("Should return walletDebited=false for DeepSeek key")
-        void shouldReturnWalletNotDebitedForDeepSeek() throws Exception {
+        @DisplayName("Should return walletDebited=true")
+        void shouldReturnWalletDebited() throws Exception {
             when(keyUsageService.chargeUsage(
-                    anyString(), anyLong(), anyLong(), anyLong(), anyString()))
-                    .thenReturn(deepSeekResponse());
-
-            mockMvc.perform(post("/internal/usage/charge")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(validRequest)))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.walletDebited").value(false));
-        }
-
-        @Test
-        @DisplayName("Should return walletDebited=true for MisterPilot key")
-        void shouldReturnWalletDebitedForMisterPilot() throws Exception {
-            when(keyUsageService.chargeUsage(
-                    anyString(), anyLong(), anyLong(), anyLong(), anyString()))
-                    .thenReturn(misterPilotResponse());
+                    anyString(), any(BigDecimal.class), anyString(), anyLong(), anyLong(), anyLong()))
+                    .thenReturn(chargedResponse());
 
             mockMvc.perform(post("/internal/usage/charge")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(validRequest)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.walletDebited").value(true));
+        }
+
+        @Test
+        @DisplayName("Should return breakdown string in response")
+        void shouldReturnBreakdown() throws Exception {
+            when(keyUsageService.chargeUsage(
+                    anyString(), any(BigDecimal.class), anyString(), anyLong(), anyLong(), anyLong()))
+                    .thenReturn(chargedResponse());
+
+            mockMvc.perform(post("/internal/usage/charge")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(validRequest)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.breakdown").isNotEmpty());
         }
     }
 
@@ -169,7 +160,7 @@ class UsageControllerTest {
         @DisplayName("Should return 400 when service throws IllegalArgumentException")
         void shouldReturn400ForIllegalArgument() throws Exception {
             when(keyUsageService.chargeUsage(
-                    anyString(), anyLong(), anyLong(), anyLong(), anyString()))
+                    anyString(), any(BigDecimal.class), anyString(), anyLong(), anyLong(), anyLong()))
                     .thenThrow(new IllegalArgumentException("Invalid API key"));
 
             mockMvc.perform(post("/internal/usage/charge")
@@ -182,9 +173,8 @@ class UsageControllerTest {
         @DisplayName("Should return 409 when service throws IllegalStateException")
         void shouldReturn409ForIllegalState() throws Exception {
             when(keyUsageService.chargeUsage(
-                    anyString(), anyLong(), anyLong(), anyLong(), anyString()))
-                    .thenThrow(new IllegalStateException(
-                            "Payment already processed"));
+                    anyString(), any(BigDecimal.class), anyString(), anyLong(), anyLong(), anyLong()))
+                    .thenThrow(new IllegalStateException("Insufficient balance"));
 
             mockMvc.perform(post("/internal/usage/charge")
                             .contentType(MediaType.APPLICATION_JSON)
