@@ -25,10 +25,11 @@ public class UsageController {
 
         CostCalculationResponse response = keyUsageService.chargeUsage(
                 request.getApiKey(),
+                request.getCostInr(),
+                request.getModel(),
                 request.getOutputTokens(),
                 request.getCacheHitTokens(),
-                request.getCacheMissTokens(),
-                request.getModel());
+                request.getCacheMissTokens());
 
         return ResponseEntity.ok(response);
     }
