@@ -1,6 +1,10 @@
 package online.misterpilot.platform.repository;
 
 import online.misterpilot.platform.entity.User;
+import online.misterpilot.platform.enums.RoleType;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +19,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     Optional<User> findByGoogleId(String googleId);
+
+    Page<User> findByRole(RoleType role, Pageable pageable);
 
     boolean existsByEmail(String email);
 

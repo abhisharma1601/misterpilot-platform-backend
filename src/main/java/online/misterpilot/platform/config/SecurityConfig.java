@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .requestMatchers("/internal/**").permitAll()
                 .requestMatchers("/api/v1/webhook/**").permitAll()
                 .requestMatchers("/api/v1/wallet/credit").denyAll()
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form.disable())

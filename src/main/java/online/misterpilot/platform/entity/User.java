@@ -3,6 +3,7 @@ package online.misterpilot.platform.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import online.misterpilot.platform.enums.RoleType;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -38,7 +39,15 @@ public class User {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 20)
+    @Builder.Default
+    private RoleType role = RoleType.USER;
+
+    @Column(name = "active", nullable = false)
+    @Builder.Default
+    private Boolean active = true;
 
     // --- Relationships ---
 

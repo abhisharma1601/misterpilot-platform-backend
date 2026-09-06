@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -20,6 +21,10 @@ public interface WalletRepository extends JpaRepository<Wallet, Long> {
     Optional<Wallet> findByUser(User user);
 
     Optional<Wallet> findByUserId(Long userId);
+
+    List<Wallet> findByUserIn(List<User> users);
+
+    List<Wallet> findByIdIn(List<Long> walletIds);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT w FROM Wallet w WHERE w.user = :user")

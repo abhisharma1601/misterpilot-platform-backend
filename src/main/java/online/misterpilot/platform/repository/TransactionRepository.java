@@ -4,6 +4,9 @@ import online.misterpilot.platform.entity.Transaction;
 import online.misterpilot.platform.entity.Wallet;
 import online.misterpilot.platform.enums.TransactionStatus;
 import online.misterpilot.platform.enums.TransactionType;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,6 +23,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Transaction> findByWalletOrderByCreatedAtDesc(Wallet wallet);
 
     List<Transaction> findByWalletAndStatus(Wallet wallet, TransactionStatus status);
+
+    Page<Transaction> findByTypeOrderByCreatedAtDesc(TransactionType type, Pageable pageable);
 
     Optional<Transaction> findByOrderId(String orderId);
 
