@@ -6,7 +6,6 @@ import online.misterpilot.platform.dto.response.ApiKeyResponse;
 import online.misterpilot.platform.dto.response.DisableKeyResponse;
 import online.misterpilot.platform.dto.response.GenerateKeyResponse;
 import online.misterpilot.platform.dto.response.VerifyKeyResponse;
-import online.misterpilot.platform.entity.ApiKey;
 import online.misterpilot.platform.entity.User;
 import online.misterpilot.platform.service.ApiKeyService;
 
