@@ -81,6 +81,73 @@ public class EmailService {
         send(toEmail, subject, body);
     }
 
+    @Async
+    public void sendEmailVerificationLink(String toEmail, String name, String token) {
+        String verifyUrl = frontendUrl + "/verify-email?token=" + token;
+        String subject = "Verify Your MisterPilot Email";
+        String body = """
+                <html><body style="font-family:sans-serif;color:#222;max-width:480px;margin:auto">
+                  <h2>Confirm Your Email</h2>
+                  <p>Hi %s,</p>
+                  <p>Thanks for signing up for MisterPilot. Click the button below to activate your
+                     account. This link expires in <strong>24 hours</strong>.</p>
+                  <a href="%s" style="display:inline-block;margin:16px 0;padding:12px 24px;background:#000;color:#fff;text-decoration:none;border-radius:6px">
+                    Verify Email
+                  </a>
+                  <p>If you didn't create a MisterPilot account, you can safely ignore this email.</p>
+                  <p style="margin-top:24px;color:#888;font-size:12px">MisterPilot Platform</p>
+                </body></html>
+                """.formatted(name, verifyUrl);
+
+        send(toEmail, subject, body);
+    }
+
+    /**
+     * Onboarding email sent to every new account, regardless of signup method
+     * (email/password or Google).
+     */
+    @Async
+    public void sendWelcomeEmail(String toEmail, String name) {
+        String subject = "Welcome to MisterPilot!";
+        String body = """
+                <html><body style="font-family:sans-serif;color:#222;max-width:480px;margin:auto">
+                  <p>Hi %s,</p>
+                  <p>Welcome to MisterPilot! We're excited to have you on board.</p>
+                  <p>MisterPilot is designed to help developers code faster, solve problems more
+                     efficiently, and stay focused by bringing AI-powered assistance directly into
+                     their workflow.</p>
+                  <p>To get started:</p>
+                  <ol>
+                    <li>Log in to your account.</li>
+                    <li>Generate or manage your API keys from the dashboard.</li>
+                    <li>Install the VS Code extension.</li>
+                    <li>Start building with AI assistance right inside your editor.</li>
+                  </ol>
+                  <p>If you have any questions, feedback, or run into any issues, simply reply to
+                     this email. We're always happy to help and would love to hear about your
+                     experience.</p>
+                  <p>Thank you for joining us and being part of the MisterPilot journey.</p>
+                  <p>Happy coding!</p>
+                  <p>Best regards,<br>The MisterPilot Team</p>
+                  <a href="%s" style="color:#000">platform.misterpilot.online</a>
+                  <p style="margin-top:24px;color:#888;font-size:12px">MisterPilot Platform</p>
+                </body></html>
+                """.formatted(firstName(name), frontendUrl);
+
+        send(toEmail, subject, body);
+    }
+
+    /**
+     * The greeting uses only the first word of the stored name,
+     * falling back to a neutral greeting when no name is available.
+     */
+    private static String firstName(String name) {
+        if (name == null || name.isBlank()) {
+            return "there";
+        }
+        return name.trim().split("\\s+")[0];
+    }
+
     private void send(String to, String subject, String htmlBody) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
