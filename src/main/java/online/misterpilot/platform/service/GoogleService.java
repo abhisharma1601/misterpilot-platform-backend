@@ -53,6 +53,7 @@ public class GoogleService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .token(authUtil.generateJwt(user))
+                .active(user.isActive())
                 .build();
     }
 

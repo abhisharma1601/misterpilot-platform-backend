@@ -8,8 +8,11 @@ import online.misterpilot.platform.dto.request.ForgotPasswordRequest;
 import online.misterpilot.platform.dto.request.GoogleLoginRequest;
 import online.misterpilot.platform.dto.request.LoginRequest;
 import online.misterpilot.platform.dto.request.RegisterRequest;
+import online.misterpilot.platform.dto.request.ResendVerificationRequest;
 import online.misterpilot.platform.dto.request.ResetPasswordRequest;
+import online.misterpilot.platform.dto.request.VerifyEmailRequest;
 import online.misterpilot.platform.dto.response.LoginResponse;
+import online.misterpilot.platform.dto.response.MessageResponse;
 import online.misterpilot.platform.service.AuthService;
 import online.misterpilot.platform.service.GoogleService;
 
@@ -41,9 +44,31 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<LoginResponse> register(@RequestBody RegisterRequest request) {
-        LoginResponse response = authService.register(request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<MessageResponse> register(@RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
+    }
+
+    /**
+     * Consumes the token from the emailed verification link and activates
+     * the account. Public endpoint — the token itself is the credential.
+     */
+    @PostMapping("/verify-email")
+    public ResponseEntity<MessageResponse> verifyEmail(@RequestBody VerifyEmailRequest request) {
+        authService.verifyEmail(request.getToken());
+        return ResponseEntity.ok(
+                new MessageResponse("Email verified. Your account is now active."));
+    }
+
+    /**
+     * Re-sends the verification link for an account that hasn't been
+     * activated yet. Invalidates any previously issued link.
+     */
+    @PostMapping("/resend-verification")
+    public ResponseEntity<MessageResponse> resendVerification(
+            @RequestBody ResendVerificationRequest request) {
+        authService.resendVerificationEmail(request.getEmail());
+        return ResponseEntity.ok(
+                new MessageResponse("A new verification link has been sent."));
     }
 
     @PostMapping("/forgot-password")
