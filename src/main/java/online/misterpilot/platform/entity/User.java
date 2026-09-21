@@ -3,7 +3,7 @@ package online.misterpilot.platform.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import online.misterpilot.platform.enums.RoleType;
+import online.misterpilot.platform.enums.Role;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,14 +40,23 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    /**
+     * Authorization role. Defaults to {@link Role#USER} for every new account.
+     * Mirrors the DB default added in V2__add_role_to_users.sql.
+     */
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 20)
     @Builder.Default
-    private RoleType role = RoleType.USER;
+    private Role role = Role.USER;
 
+    /**
+     * Whether the account may authenticate. New accounts start INACTIVE and
+     * must be activated before use. Mirrors the DB default in
+     * V3__add_active_to_users.sql.
+     */
     @Column(name = "active", nullable = false)
     @Builder.Default
-    private Boolean active = true;
+    private boolean active = false;
 
     // --- Relationships ---
 

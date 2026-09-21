@@ -33,7 +33,7 @@ public class UserDataService {
     private UserDto toDTO(User user, BigDecimal balance) {
         UserDto userDto = new UserDto();
         userDto.setId(user.getId());
-        userDto.setActive(user.getActive());
+        userDto.setActive(user.isActive());
         userDto.setEmail(user.getEmail());
         userDto.setName(user.getName());
         userDto.setCreatedAt(user.getCreatedAt());

@@ -577,7 +577,7 @@ costInr     = finalCostUsd × inrRate     [configurable, default 96.0]
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 
 # Production
-java -jar target/platform-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+java -jar target/platform-0.0.2-SNAPSHOT.jar --spring.profiles.active=prod
 ```
 
 The server starts on **`http://localhost:8080`**.
