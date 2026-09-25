@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import online.misterpilot.platform.dto.Admin.response.UserDto;
 import online.misterpilot.platform.entity.User;
 import online.misterpilot.platform.entity.Wallet;
-import online.misterpilot.platform.enums.RoleType;
+import online.misterpilot.platform.enums.Role;
 import online.misterpilot.platform.repository.UserRepository;
 import online.misterpilot.platform.repository.WalletRepository;
 
@@ -22,7 +22,7 @@ public class UserDataService {
     final private WalletRepository walletRepository;
 
     public Page<UserDto> getUsers(Pageable pageable) {
-        Page<User> userPage = userRepository.findByRole(RoleType.USER, pageable);
+        Page<User> userPage = userRepository.findByRole(Role.USER, pageable);
         List<User> users = userPage.getContent();
         Map<User, BigDecimal> balanceMap = walletRepository.findByUserIn(users)
                 .stream()

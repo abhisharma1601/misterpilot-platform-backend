@@ -120,10 +120,10 @@ class WalletServiceTest {
         }
 
         @Test
-        @DisplayName("Should throw on amount below ₹50")
+        @DisplayName("Should throw on amount below ₹99")
         void shouldThrowBelowMinimum() {
             CreateOrderRequest req = CreateOrderRequest.builder()
-                    .amount(new BigDecimal("49.99")).build();
+                    .amount(new BigDecimal("98.99")).build();
 
             assertThatThrownBy(() -> walletService.createOrder(req, testUser))
                     .isInstanceOf(IllegalArgumentException.class)
