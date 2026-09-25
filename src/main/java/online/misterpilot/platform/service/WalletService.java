@@ -32,7 +32,7 @@ public class WalletService {
     private final RazorpayService razorpayService;
     private final RazorpayProperties razorpayProperties;
     private static final BigDecimal ZERO = BigDecimal.ZERO;
-    private static final BigDecimal MIN_RECHARGE = new BigDecimal("50");
+    private static final BigDecimal MIN_RECHARGE = new BigDecimal("99.00");
 
     /**
      * Creates a Razorpay order and logs a PENDING transaction immediately.
