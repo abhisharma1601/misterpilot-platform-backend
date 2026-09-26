@@ -120,15 +120,39 @@ class WalletServiceTest {
         }
 
         @Test
-        @DisplayName("Should throw on amount below ₹50")
+        @DisplayName("Should throw on amount below ₹99")
         void shouldThrowBelowMinimum() {
             CreateOrderRequest req = CreateOrderRequest.builder()
-                    .amount(new BigDecimal("49.99")).build();
+                    .amount(new BigDecimal("98.99")).build();
 
             assertThatThrownBy(() -> walletService.createOrder(req, testUser))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("Minimum recharge amount");
+                    .hasMessageContaining("Minimum recharge amount is ₹99.00");
             verifyNoInteractions(razorpayService);
+        }
+
+        @Test
+        @DisplayName("Should accept exactly ₹99")
+        void shouldAcceptMinimum() {
+            CreateOrderRequest req = CreateOrderRequest.builder()
+                    .amount(new BigDecimal("99.00")).build();
+            Wallet wallet = walletWithBalance("0.00");
+
+            JSONObject rzpOrder = new JSONObject();
+            rzpOrder.put("id", "order_MIN");
+            rzpOrder.put("currency", "INR");
+            rzpOrder.put("receipt", "rcpt_MIN");
+
+            when(walletRepository.findByUser(testUser))
+                    .thenReturn(Optional.of(wallet));
+            when(razorpayService.createOrder(99L)).thenReturn(rzpOrder);
+            when(transactionRepository.save(any(Transaction.class)))
+                    .thenReturn(Transaction.builder().id(2L).build());
+
+            CreateOrderResponse resp = walletService.createOrder(req, testUser);
+
+            assertThat(resp.getOrderId()).isEqualTo("order_MIN");
+            assertThat(resp.getAmount()).isEqualByComparingTo(new BigDecimal("99.00"));
         }
     }
 
