@@ -1,4 +1,4 @@
-package online.misterpilot.platform.service.Admin;
+package online.misterpilot.platform.service.admin;
 
 import java.util.List;
 import java.util.Map;
@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import online.misterpilot.platform.dto.Admin.response.TransactionDto;
+import online.misterpilot.platform.dto.admin.response.TransactionDto;
 import online.misterpilot.platform.entity.Transaction;
 import online.misterpilot.platform.entity.Wallet;
 import online.misterpilot.platform.enums.TransactionType;
