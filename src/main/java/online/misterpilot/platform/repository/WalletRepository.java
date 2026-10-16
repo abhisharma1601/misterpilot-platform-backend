@@ -4,6 +4,7 @@ import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
 import online.misterpilot.platform.entity.User;
 import online.misterpilot.platform.entity.Wallet;
+import online.misterpilot.platform.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
@@ -12,6 +13,8 @@ import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -20,6 +23,13 @@ public interface WalletRepository extends JpaRepository<Wallet, Long> {
     Optional<Wallet> findByUser(User user);
 
     Optional<Wallet> findByUserId(Long userId);
+
+    List<Wallet> findByUserIn(List<User> users);
+
+    List<Wallet> findByIdIn(List<Long> walletIds);
+
+    @Query("SELECT COALESCE(SUM(w.balance), 0) FROM Wallet w WHERE w.user.role = :role")
+    BigDecimal sumBalanceByUserRole(@Param("role") Role role);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT w FROM Wallet w WHERE w.user = :user")

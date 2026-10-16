@@ -42,6 +42,7 @@ public class AuthUtil {
                 .claim("email", user.getEmail())
                 .claim("name", user.getName())
                 .claim("googleId", user.getGoogleId())
+                .claim("role", user.getRole())
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(signingKey)
