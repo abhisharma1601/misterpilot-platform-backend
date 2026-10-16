@@ -64,6 +64,12 @@ public interface TokenUsageRepository extends JpaRepository<TokenUsage, Long> {
     List<TokenUsage> findByUserAndCreatedAtBetweenOrderByCreatedAtDesc(
             User user, LocalDateTime start, LocalDateTime end);
 
+    // --- Admin: provider funding ---
+
+    @Query("SELECT t.model, SUM(t.costInr) FROM TokenUsage t " +
+           "WHERE t.createdAt >= :since GROUP BY t.model")
+    List<Object[]> sumCostInrGroupByModelSince(@Param("since") LocalDateTime since);
+
     @Modifying
     @Query("DELETE FROM TokenUsage t WHERE t.user.id = :userId")
     void deleteAllByUserId(@Param("userId") Long userId);

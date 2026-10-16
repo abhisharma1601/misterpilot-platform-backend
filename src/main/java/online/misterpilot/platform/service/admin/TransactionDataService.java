@@ -2,6 +2,7 @@ package online.misterpilot.platform.service.admin;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -27,8 +28,11 @@ public class TransactionDataService {
         Page<Transaction> transactions = transactionRepository
                 .findByTypeOrderByCreatedAtDesc(TransactionType.RECHARGE, pageable);
 
+        // Transactions of deleted users are kept with no wallet
         List<Long> walletIds = transactions.stream()
-                .map(t -> t.getWallet().getId())
+                .map(Transaction::getWallet)
+                .filter(Objects::nonNull)
+                .map(Wallet::getId)
                 .distinct()
                 .collect(Collectors.toList());
 
@@ -48,7 +52,8 @@ public class TransactionDataService {
         dto.setStatus(transaction.getStatus());
         dto.setOrderId(transaction.getOrderId());
         dto.setCreatedAt(transaction.getCreatedAt());
-        dto.setUserId(walletIdToUserId.get(transaction.getWallet().getId()));
+        Wallet wallet = transaction.getWallet();
+        dto.setUserId(wallet == null ? null : walletIdToUserId.get(wallet.getId()));
         return dto;
     }
 }
